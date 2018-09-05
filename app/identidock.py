@@ -1,18 +1,19 @@
 import hashlib
+import html
 import requests
 import redis
 from flask import Flask, Response, request
 
 app = Flask(__name__)
 salt = "UniqueSalt"
-defaultName = 'Joe Bloggs'
+defaultName = 'Chencer'
 cache = redis.StrictRedis(host='redis', port=6379, db=0)
 
 
 @app.route('/', methods=['GET', 'POST'])
 def mainpage():
     if request.method == 'POST':
-        name = request.form['name']
+        name = html.escape(request.form['name'], quote=True)
     else:
         name = defaultName
 
@@ -31,6 +32,7 @@ def mainpage():
 
 @app.route('/monster/<name>')
 def getIdenticon(name):
+    name = html.escape(name, quote=True)
     image = cache.get(name)
     if image is None:
         print('Cache miss', flush=True)
